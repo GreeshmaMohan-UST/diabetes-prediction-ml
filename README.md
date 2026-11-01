@@ -14,6 +14,8 @@ pip install pandas scikit-learn
 python diabetes_prediction.py
 ```
 
+# Part 1 - Data preparation
+
 ## 1. Dataset exploration summary
 
 - **Shape:** 768 rows x 9 columns (8 features + target).
@@ -33,7 +35,7 @@ python diabetes_prediction.py
 - **Statistical summary:** run `df.describe()` (printed by the script). Notable: Insulin has mean 79.8 but max 846; SkinThickness and Insulin are heavily skewed by the zeros.
 - **Class balance:** 500 non-diabetic (65.1%) vs 268 diabetic (34.9%), so the classes are imbalanced.
 
-## 2. Description of features and target
+## 2. Description of features and target variable
 
 - **Features (X):** 8 numeric clinical measurements listed above.
 - **Target (y):** `Outcome` - `1` = diabetic, `0` = not diabetic (binary classification).
@@ -56,6 +58,9 @@ The imputer and scaler sit in a single `Pipeline` fit on `X_train`, so no test-s
 | Training | 614 | 8 | 34.85 |
 | Testing | 154 | 8 | 35.06 |
 | Total | 768 | 8 | 34.90 |
+
+---
+
 # Part 2 - Classification model
 
 ## Algorithm: Logistic Regression
@@ -87,5 +92,3 @@ Limitation: it assumes a roughly linear relationship between the features and th
 The model finds about half of the diabetic patients in the test set (recall 0.50). Its accuracy is held down by the diabetic class, which is the minority at 35%. This is worth noting if the model is used for screening, where missing a positive case is costly.
 
 These figures come from running `diabetes_prediction.py` locally.
-
-
