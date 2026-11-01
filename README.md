@@ -33,12 +33,12 @@ python diabetes_prediction.py
 - **Statistical summary:** run `df.describe()` (printed by the script). Notable: Insulin has mean 79.8 but max 846; SkinThickness and Insulin are heavily skewed by the zeros.
 - **Class balance:** 500 non-diabetic (65.1%) vs 268 diabetic (34.9%), so the classes are imbalanced.
 
-## 2. Features and target
+## 2. Description of features and target
 
 - **Features (X):** 8 numeric clinical measurements listed above.
 - **Target (y):** `Outcome` - `1` = diabetic, `0` = not diabetic (binary classification).
 
-## 3. Preprocessing steps
+## 3. Preprocessing steps performed
 
 1. Replaced zeros in Glucose, BloodPressure, SkinThickness, Insulin and BMI with NaN.
 2. Imputed those NaNs with the **median** of the training set (median is robust to the skew above).
@@ -47,9 +47,9 @@ python diabetes_prediction.py
 
 The imputer and scaler sit in a single `Pipeline` fit on `X_train`, so no test-set information leaks into preprocessing.
 
-## 4. Train-test split
+## 4. Training and testing dataset sizes
 
-- `train_test_split` with `test_size=0.2`, `random_state=42`, `stratify=y` (the diabetic share is kept equal in both sets).
+- The split uses `train_test_split` with `test_size=0.2`, `random_state=42`, `stratify=y` (the diabetic share is kept equal in both sets).
 
 | Set | Rows | Features | Diabetic (%) |
 |---|---|---|---|
