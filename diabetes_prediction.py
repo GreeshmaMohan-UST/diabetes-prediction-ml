@@ -257,3 +257,82 @@ comparison = pd.DataFrame(
 )
 print(comparison.to_string(index=False))
 print(f"\nAccuracy gap (train - test): {train_accuracy - test_accuracy:.3f}")
+
+# %% [markdown]
+# ---
+# # Part 4 - Model performance analysis
+
+# %% [markdown]
+# ## 1. Baseline comparison
+#
+# A model that always predicts the majority class is the simplest possible reference.
+
+# %%
+majority_class = y_train.mode()[0]
+baseline_test_accuracy = accuracy_score(y_test, np.full_like(y_test, majority_class))
+print(f"Majority-class baseline test accuracy: {baseline_test_accuracy:.3f}")
+print(f"Model test accuracy:                   {test_accuracy:.3f}")
+print(f"Improvement over baseline:             {test_accuracy - baseline_test_accuracy:+.3f}")
+
+# %% [markdown]
+# ## 2. Stability with 5-fold cross-validation on the training set
+#
+# A single 154-row test set is a noisy estimate. Cross-validation on the training data gives
+# a range of scores and shows whether the test accuracy is typical.
+
+# %%
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
+cv_accuracy = cross_val_score(model, X_train, y_train, cv=cv, scoring="accuracy")
+cv_roc_auc = cross_val_score(model, X_train, y_train, cv=cv, scoring="roc_auc")
+
+print("CV accuracy per fold:", cv_accuracy.round(3))
+print(f"CV accuracy: {cv_accuracy.mean():.3f} +/- {cv_accuracy.std():.3f}")
+print(f"CV ROC-AUC:  {cv_roc_auc.mean():.3f} +/- {cv_roc_auc.std():.3f}")
+
+# %% [markdown]
+# ## 3. Train vs test ROC-AUC
+#
+# ROC-AUC is threshold-independent, so it is a fairer check of overfitting than accuracy.
+
+# %%
+train_roc_auc = roc_auc_score(y_train, model.predict_proba(X_train)[:, 1])
+print(f"Train ROC-AUC: {train_roc_auc:.3f}")
+print(f"Test ROC-AUC:  {roc_auc_score(y_test, y_proba):.3f}")
+
+# %% [markdown]
+# ## 4. Effect of the decision threshold
+#
+# The default threshold is 0.5. For screening, a lower threshold catches more diabetic patients
+# at the cost of more false alarms. This shows the trade-off on the test set.
+
+# %%
+from sklearn.metrics import precision_score, recall_score
+
+rows = []
+for threshold in [0.5, 0.4, 0.3, 0.2]:
+    pred = (y_proba >= threshold).astype(int)
+    rows.append(
+        {
+            "Threshold": threshold,
+            "Accuracy": round(accuracy_score(y_test, pred), 3),
+            "Precision (diabetic)": round(precision_score(y_test, pred, zero_division=0), 3),
+            "Recall (diabetic)": round(recall_score(y_test, pred), 3),
+            "Flagged as diabetic": int(pred.sum()),
+        }
+    )
+threshold_table = pd.DataFrame(rows)
+print(threshold_table.to_string(index=False))
+
+# %% [markdown]
+# ## 5. Feature influence
+#
+# Coefficients of the standardised features, sorted by size. Larger absolute values mean a
+# stronger influence on the predicted risk.
+
+# %%
+coefficients = pd.Series(
+    model.named_steps["classifier"].coef_[0], index=X.columns
+).sort_values(key=abs, ascending=False)
+print(coefficients.round(3).to_string())
