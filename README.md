@@ -14,8 +14,6 @@ pip install pandas scikit-learn
 python diabetes_prediction.py
 ```
 
-# Part 1 - Data preparation
-
 ## 1. Dataset exploration summary
 
 - **Shape:** 768 rows x 9 columns (8 features + target).
@@ -35,12 +33,12 @@ python diabetes_prediction.py
 - **Statistical summary:** run `df.describe()` (printed by the script). Notable: Insulin has mean 79.8 but max 846; SkinThickness and Insulin are heavily skewed by the zeros.
 - **Class balance:** 500 non-diabetic (65.1%) vs 268 diabetic (34.9%), so the classes are imbalanced.
 
-## 2. Description of features and target variable
+## 2. Features and target
 
 - **Features (X):** 8 numeric clinical measurements listed above.
 - **Target (y):** `Outcome` - `1` = diabetic, `0` = not diabetic (binary classification).
 
-## 3. Preprocessing steps performed
+## 3. Preprocessing steps
 
 1. Replaced zeros in Glucose, BloodPressure, SkinThickness, Insulin and BMI with NaN.
 2. Imputed those NaNs with the **median** of the training set (median is robust to the skew above).
@@ -49,9 +47,9 @@ python diabetes_prediction.py
 
 The imputer and scaler sit in a single `Pipeline` fit on `X_train`, so no test-set information leaks into preprocessing.
 
-## 4. Training and testing dataset sizes
+## 4. Train-test split
 
-- The split uses `train_test_split` with `test_size=0.2`, `random_state=42`, `stratify=y` (the diabetic share is kept equal in both sets).
+- `train_test_split` with `test_size=0.2`, `random_state=42`, `stratify=y` (the diabetic share is kept equal in both sets).
 
 | Set | Rows | Features | Diabetic (%) |
 |---|---|---|---|
@@ -91,6 +89,12 @@ Limitation: it assumes a roughly linear relationship between the features and th
 | Accuracy | | | 0.71 | 154 |
 | Macro avg | 0.68 | 0.66 | 0.67 | 154 |
 | Weighted avg | 0.70 | 0.71 | 0.70 | 154 |
+
+The model finds about half of the diabetic patients in the test set (recall 0.50). Its accuracy is held down by the diabetic class, which is the minority at 35%. This is worth noting if the model is used for screening, where missing a positive case is costly.
+
+These figures come from running `diabetes_prediction.py` locally.
+
+---
 
 # Part 3 - Model training and evaluation
 
@@ -144,11 +148,5 @@ The accuracy gap is 0.089 (about 9 percentage points).
 - **Some overfitting, but mild.** Training accuracy is about 9 points higher than test accuracy. Logistic Regression has few parameters, so this gap is modest. The cause is not tested here; a 154-row test set is small, so some of the gap may be sampling variation.
 - **Diabetic patients are the weak spot.** Recall for the diabetic class is 0.50: the model misses 27 of the 54 diabetic patients in the test set. Precision is 0.60, so 18 patients are flagged who are not diabetic. For a screening tool, missed cases (false negatives) are the costlier error, so lowering the decision threshold or using class weighting would be worth trying in future work.
 - **Majority-class bias.** The non-diabetic class is 65% of the data, which pulls the model toward predicting "not diabetic". The higher F1 for that class (0.785) than for the diabetic class (0.545) reflects this imbalance.
-
-These figures come from running `diabetes_prediction.py` locally.
-
-
-
-The model finds about half of the diabetic patients in the test set (recall 0.50). Its accuracy is held down by the diabetic class, which is the minority at 35%. This is worth noting if the model is used for screening, where missing a positive case is costly.
 
 These figures come from running `diabetes_prediction.py` locally.
