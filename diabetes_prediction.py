@@ -10,6 +10,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, StandardScaler
@@ -158,3 +160,41 @@ summary = pd.DataFrame(
     }
 )
 print(summary.to_string(index=False))
+
+# %% [markdown]
+# ---
+# # Part 2 - Classification model
+#
+# **Algorithm: Logistic Regression.** It is a linear, probabilistic classifier suited to a
+# binary outcome. It outputs a probability of diabetes, which is easy to interpret, and it is
+# a strong baseline for a small, mostly numeric dataset like this one.
+#
+# The model is chained after the same preprocessing from Part 1, so the imputer and scaler are
+# still fit on the training set only.
+
+# %%
+model = Pipeline(
+    steps=[
+        ("zero_to_nan", FunctionTransformer(replace_zero_with_nan, feature_names_out="one-to-one")),
+        ("imputer", SimpleImputer(strategy="median")),
+        ("scaler", StandardScaler()),
+        ("classifier", LogisticRegression(max_iter=1000, random_state=RANDOM_STATE)),
+    ]
+)
+
+model.fit(X_train, y_train)
+print("Model trained:", model.named_steps["classifier"])
+
+# %% [markdown]
+# ## Quick evaluation on the test set
+#
+# Not part of the required tasks, but a sanity check that the trained model generalises.
+
+# %%
+y_pred = model.predict(X_test)
+y_proba = model.predict_proba(X_test)[:, 1]
+
+print(f"Test accuracy: {accuracy_score(y_test, y_pred):.3f}")
+print(f"Test ROC-AUC:  {roc_auc_score(y_test, y_proba):.3f}")
+print("\nClassification report:")
+print(classification_report(y_test, y_pred, target_names=["Not diabetic", "Diabetic"]))
