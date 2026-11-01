@@ -14,6 +14,8 @@ pip install pandas scikit-learn
 python diabetes_prediction.py
 ```
 
+# Part 1 - Data preparation
+
 ## 1. Dataset exploration summary
 
 - **Shape:** 768 rows x 9 columns (8 features + target).
@@ -30,7 +32,21 @@ python diabetes_prediction.py
   | BMI | 11 |
 
   376 of 768 rows have at least one of these hidden missing values.
-- **Statistical summary:** run `df.describe()` (printed by the script). Notable: Insulin has mean 79.8 but max 846; SkinThickness and Insulin are heavily skewed by the zeros.
+- **Statistical summary** (`df.describe()`, all 768 rows, values as recorded including the zeros):
+
+| Column | count | mean | std | min | 25% | 50% | 75% | max |
+|---|---|---|---|---|---|---|---|---|
+| Pregnancies | 768 | 3.85 | 3.37 | 0 | 1 | 3 | 6 | 17 |
+| Glucose | 768 | 120.89 | 31.97 | 0 | 99 | 117 | 140.25 | 199 |
+| BloodPressure | 768 | 69.11 | 19.36 | 0 | 62 | 72 | 80 | 122 |
+| SkinThickness | 768 | 20.54 | 15.95 | 0 | 0 | 23 | 32 | 99 |
+| Insulin | 768 | 79.8 | 115.24 | 0 | 0 | 30.5 | 127.25 | 846 |
+| BMI | 768 | 31.99 | 7.88 | 0 | 27.3 | 32 | 36.6 | 67.1 |
+| DiabetesPedigreeFunction | 768 | 0.47 | 0.33 | 0.08 | 0.24 | 0.37 | 0.63 | 2.42 |
+| Age | 768 | 33.24 | 11.76 | 21 | 24 | 29 | 41 | 81 |
+| Outcome | 768 | 0.35 | 0.48 | 0 | 0 | 0 | 1 | 1 |
+
+  Notable: Insulin has a mean of 79.8 but a maximum of 846, and SkinThickness and Insulin are heavily skewed by the zeros (their 25th percentiles are 0).
 - **Class balance:** 500 non-diabetic (65.1%) vs 268 diabetic (34.9%), so the classes are imbalanced.
 
 ## 2. Features and target
