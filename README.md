@@ -84,10 +84,14 @@ Limitation: it assumes a roughly linear relationship between the features and th
 | Accuracy | 0.708 |
 | ROC-AUC | 0.813 |
 
-| Class | Precision | Recall | F1 |
-|---|---|---|---|
-| Not diabetic (0) | 0.75 | 0.82 | 0.78 |
-| Diabetic (1) | 0.60 | 0.50 | 0.55 |
+| Class | Precision | Recall | F1-score | Support |
+|---|---|---|---|---|
+| Not diabetic (0) | 0.75 | 0.82 | 0.78 | 100 |
+| Diabetic (1) | 0.60 | 0.50 | 0.55 | 54 |
+| Accuracy | | | 0.71 | 154 |
+| Macro avg | 0.68 | 0.66 | 0.67 | 154 |
+| Weighted avg | 0.70 | 0.71 | 0.70 | 154 |
+
 
 The model finds about half of the diabetic patients in the test set (recall 0.50). Its accuracy is held down by the diabetic class, which is the minority at 35%. This is worth noting if the model is used for screening, where missing a positive case is costly.
 
