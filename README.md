@@ -92,6 +92,62 @@ Limitation: it assumes a roughly linear relationship between the features and th
 | Macro avg | 0.68 | 0.66 | 0.67 | 154 |
 | Weighted avg | 0.70 | 0.71 | 0.70 | 154 |
 
+# Part 3 - Model training and evaluation
+
+## 1. Model training
+
+The Logistic Regression pipeline is fitted on the 614 training rows. The training output is:
+
+```
+Model trained: LogisticRegression(max_iter=1000, random_state=42)
+```
+
+## 2. Predictions on the training set
+
+The first 10 training predictions are `[0 0 0 0 0 1 0 1 0 0]`, against actual labels `[0 0 0 0 0 1 1 1 0 0]`. Eight of the ten match.
+
+## 3. Training accuracy
+
+**Training accuracy: 0.796** (79.6%)
+
+## 4. Test performance
+
+**Test accuracy: 0.708** (70.8%)
+
+| Class | Precision | Recall | F1-score | Support |
+|---|---|---|---|---|
+| Not diabetic (0) | 0.752 | 0.820 | 0.785 | 100 |
+| Diabetic (1) | 0.600 | 0.500 | 0.545 | 54 |
+| Accuracy | | | 0.708 | 154 |
+| Macro avg | 0.676 | 0.660 | 0.665 | 154 |
+| Weighted avg | 0.699 | 0.708 | 0.701 | 154 |
+
+**Confusion matrix (test set)**, rows = actual, columns = predicted:
+
+|  | Predicted 0 | Predicted 1 |
+|---|---|---|
+| **Actual 0** | 82 (TN) | 18 (FP) |
+| **Actual 1** | 27 (FN) | 27 (TP) |
+
+## 5. Training vs testing comparison
+
+| Set | Accuracy | Rows |
+|---|---|---|
+| Training | 0.796 | 614 |
+| Testing | 0.708 | 154 |
+
+The accuracy gap is 0.089 (about 9 percentage points).
+
+## Interpretation
+
+- **The model generalises reasonably well.** Test accuracy (70.8%) is above the 64.9% you would get by always predicting "not diabetic" (100 of 154 test rows), and the test ROC-AUC of 0.813 shows good separation between the two classes.
+- **Some overfitting, but mild.** Training accuracy is about 9 points higher than test accuracy. Logistic Regression has few parameters, so this gap is modest. The cause is not tested here; a 154-row test set is small, so some of the gap may be sampling variation.
+- **Diabetic patients are the weak spot.** Recall for the diabetic class is 0.50: the model misses 27 of the 54 diabetic patients in the test set. Precision is 0.60, so 18 patients are flagged who are not diabetic. For a screening tool, missed cases (false negatives) are the costlier error, so lowering the decision threshold or using class weighting would be worth trying in future work.
+- **Majority-class bias.** The non-diabetic class is 65% of the data, which pulls the model toward predicting "not diabetic". The higher F1 for that class (0.785) than for the diabetic class (0.545) reflects this imbalance.
+
+These figures come from running `diabetes_prediction.py` locally.
+
+
 
 The model finds about half of the diabetic patients in the test set (recall 0.50). Its accuracy is held down by the diabetic class, which is the minority at 35%. This is worth noting if the model is used for screening, where missing a positive case is costly.
 
