@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, StandardScaler
@@ -198,3 +198,62 @@ print(f"Test accuracy: {accuracy_score(y_test, y_pred):.3f}")
 print(f"Test ROC-AUC:  {roc_auc_score(y_test, y_proba):.3f}")
 print("\nClassification report:")
 print(classification_report(y_test, y_pred, target_names=["Not diabetic", "Diabetic"]))
+
+# %% [markdown]
+# ---
+# # Part 3 - Model training and evaluation
+
+# %% [markdown]
+# ## 1. Fit the model
+#
+# The pipeline was already fitted on the training set in Part 2. Fitting again here makes the
+# training step explicit for this part.
+
+# %%
+model.fit(X_train, y_train)
+print("Training complete on", X_train.shape[0], "rows")
+
+# %% [markdown]
+# ## 2. Predictions on the training set
+
+# %%
+y_train_pred = model.predict(X_train)
+print("First 10 training predictions:", y_train_pred[:10])
+print("First 10 actual labels:       ", y_train.values[:10])
+
+# %% [markdown]
+# ## 3. Training accuracy
+
+# %%
+train_accuracy = accuracy_score(y_train, y_train_pred)
+print(f"Training accuracy: {train_accuracy:.3f}")
+
+# %% [markdown]
+# ## 4. Test accuracy, precision, recall, F1 and confusion matrix
+
+# %%
+test_accuracy = accuracy_score(y_test, y_pred)
+print(f"Test accuracy: {test_accuracy:.3f}")
+
+print("\nPrecision, recall, F1 (test set):")
+print(classification_report(y_test, y_pred, target_names=["Not diabetic", "Diabetic"], digits=3))
+
+cm = confusion_matrix(y_test, y_pred)
+print("Confusion matrix (test set): rows = actual, columns = predicted")
+print(pd.DataFrame(cm, index=["Actual 0", "Actual 1"], columns=["Pred 0", "Pred 1"]))
+tn, fp, fn, tp = cm.ravel()
+print(f"TN={tn}  FP={fp}  FN={fn}  TP={tp}")
+
+# %% [markdown]
+# ## 5. Training vs testing performance
+
+# %%
+comparison = pd.DataFrame(
+    {
+        "Set": ["Training", "Testing"],
+        "Accuracy": [round(train_accuracy, 3), round(test_accuracy, 3)],
+        "Rows": [len(X_train), len(X_test)],
+    }
+)
+print(comparison.to_string(index=False))
+print(f"\nAccuracy gap (train - test): {train_accuracy - test_accuracy:.3f}")
