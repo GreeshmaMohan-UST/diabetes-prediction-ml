@@ -150,3 +150,75 @@ The accuracy gap is 0.089 (about 9 percentage points).
 - **Majority-class bias.** The non-diabetic class is 65% of the data, which pulls the model toward predicting "not diabetic". The higher F1 for that class (0.785) than for the diabetic class (0.545) reflects this imbalance.
 
 These figures come from running `diabetes_prediction.py` locally.
+
+---
+
+# Part 4 - Model performance analysis
+
+## 1. Baseline comparison
+
+| Model | Test accuracy |
+|---|---|
+| Always predict "not diabetic" (majority class) | 0.649 |
+| Logistic Regression | 0.708 |
+
+The model is 5.8 points better than the baseline. That is a real but modest gain.
+
+## 2. Stability: 5-fold cross-validation on the training set
+
+| Measure | Mean | Std dev |
+|---|---|---|
+| CV accuracy | 0.788 | 0.019 |
+| CV ROC-AUC | 0.843 | 0.019 |
+
+Fold accuracies: 0.789, 0.789, 0.821, 0.780, 0.762.
+
+The test accuracy of 0.708 is below every fold. It is about four standard deviations below the CV mean. The test split is therefore harder than a typical slice of the training data, or it happens to contain a less separable group of patients. This means the single test score understates how the model performs on average, and it should not be read as the model's true accuracy.
+
+## 3. Train vs test ROC-AUC
+
+| Set | ROC-AUC |
+|---|---|
+| Training | 0.850 |
+| Cross-validation | 0.843 |
+| Testing | 0.813 |
+
+ROC-AUC does not depend on the threshold, so it is a fairer overfitting check than accuracy. The drop from 0.850 to 0.813 is small. The model generalises well and is not badly overfitted, which is consistent with a linear model on 614 rows.
+
+## 4. Effect of the decision threshold (test set)
+
+| Threshold | Accuracy | Precision (diabetic) | Recall (diabetic) | Flagged as diabetic |
+|---|---|---|---|---|
+| 0.5 (default) | 0.708 | 0.600 | 0.500 | 45 |
+| 0.4 | 0.734 | 0.614 | 0.648 | 57 |
+| 0.3 | 0.740 | 0.597 | 0.796 | 72 |
+| 0.2 | 0.708 | 0.552 | 0.889 | 87 |
+
+Lowering the threshold catches more diabetic patients. At 0.3, recall rises from 0.50 to 0.80, at a cost of more false alarms. Accuracy alone hides this trade-off.
+
+**Caveat:** these thresholds were compared on the test set, so picking one from this table would overfit the test data. A threshold should be chosen with cross-validation on the training set and then checked once on the test set.
+
+## 5. Feature influence
+
+| Feature | Coefficient | Direction |
+|---|---|---|
+| Glucose | +1.183 | Raises risk |
+| BMI | +0.689 | Raises risk |
+| Pregnancies | +0.377 | Raises risk |
+| DiabetesPedigreeFunction | +0.233 | Raises risk |
+| Age | +0.148 | Raises risk |
+| Insulin | -0.066 | Lowers risk (small) |
+| BloodPressure | -0.044 | Lowers risk (small) |
+| SkinThickness | +0.028 | Negligible |
+
+Coefficients are on standardised features, so their sizes can be compared directly. Glucose has about 1.7 times the influence of BMI. The Insulin and BloodPressure signs are weak and may not be meaningful. Their coefficients are small, but I haven't tested how stable they are across different splits.
+
+## Conclusions
+
+1. **The model works, but only moderately.** It beats the majority-class baseline and reaches a test ROC-AUC of 0.813. Its accuracy of about 71–79% is useful for risk screening, not for a clinical diagnosis.
+2. **Glucose and BMI drive the predictions.** These are the clinically expected risk factors, which supports the model's validity.
+3. **Diabetic patients are under-detected at the default threshold.** Recall is 0.50. For screening, the threshold should be lowered, chosen with cross-validation.
+4. **The test score may be pessimistic.** Cross-validation gives 0.788 on the training data, well above the 0.708 test score. The test split may simply be harder, so the typical accuracy is probably closer to the cross-validation figure. Repeated splits would confirm this.
+5. **Next steps:** compare with other models (for example, a tree ensemble) and use class weighting or cross-validated threshold selection. Use the held-out test set only once for the final check.
+
+These figures come from running `diabetes_prediction.py` locally.
